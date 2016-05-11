@@ -2,6 +2,7 @@
 using System.IO;
 using System.IO.Fakes;
 using Microsoft.QualityTools.Testing.Fakes;
+using Microsoft.QualityTools.Testing.Fakes.Shims;
 using NUnit.Framework;
 
 namespace FilesystemSearchExtensions.Tests
@@ -9,6 +10,12 @@ namespace FilesystemSearchExtensions.Tests
     [TestFixture]
     public class DirectoryExtensions
     {
+        [TestFixtureSetUp]
+        public static void FixtureSetup()
+        {
+            ShimBehaviors.Current = ShimBehaviors.DefaultValue;
+        }
+
         [Test]
         public void GetDirectoriesRecursively_FindCurrentDirectorySibling()
         {
