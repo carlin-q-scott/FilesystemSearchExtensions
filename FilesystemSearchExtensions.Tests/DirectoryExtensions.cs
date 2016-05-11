@@ -10,63 +10,63 @@ namespace FilesystemSearchExtensions.Tests
     [TestFixture]
     public class DirectoryExtensions
     {
-        [TestFixtureSetUp]
-        public static void FixtureSetup()
+        private IDisposable _shimsContext;
+
+        [SetUp]
+        public void TestSetup()
         {
+            _shimsContext = ShimsContext.Create();
             ShimBehaviors.Current = ShimBehaviors.DefaultValue;
+        }
+
+        [TearDown]
+        public void TestTearDown()
+        {
+            _shimsContext.Dispose();
         }
 
         [Test]
         public void GetDirectoriesRecursively_FindCurrentDirectorySibling()
         {
-            using (ShimsContext.Create())
+            var targetDirectory = new ShimDirectoryInfo { NameGet = () => "sibling" }.Instance;
+            var currentDirectory = new ShimDirectoryInfo
             {
-                var targetDirectory = new ShimDirectoryInfo { NameGet = () => "sibling" }.Instance;
-                var currentDirectory = new ShimDirectoryInfo
-                {
-                    GetDirectoriesString = s => new[] { targetDirectory }
-                }.Instance;
+                GetDirectoriesString = s => new[] { targetDirectory }
+            }.Instance;
 
-                var result = currentDirectory.GetDirectoriesRecursively("sibling");
-                Assert.That(result, Has.Length.EqualTo(1));
-                Assert.That(result, Has.Member(targetDirectory));
-            }
+            var result = currentDirectory.GetDirectoriesRecursively("sibling");
+            Assert.That(result, Has.Length.EqualTo(1));
+            Assert.That(result, Has.Member(targetDirectory));
         }
 
         [Test]
         public void GetDirectoriesRecursively_FindParentSibling()
         {
-            using (ShimsContext.Create())
+            var targetDirectory = new ShimDirectoryInfo {NameGet = () => "sibling"}.Instance;
+            var currentDirectory = new ShimDirectoryInfo
             {
-                var targetDirectory = new ShimDirectoryInfo {NameGet = () => "sibling"}.Instance;
-                var currentDirectory = new ShimDirectoryInfo
+                GetDirectoriesString = s => new DirectoryInfo[0],
+                ParentGet = () => new ShimDirectoryInfo
                 {
-                    GetDirectoriesString = s => new DirectoryInfo[0],
-                    ParentGet = () => new ShimDirectoryInfo
-                    {
-                        GetDirectoriesString = s => new[] { targetDirectory },
-                    }.Instance
-                }.Instance;
+                    GetDirectoriesString = s => new[] { targetDirectory },
+                }.Instance
+            }.Instance;
 
-                var result = currentDirectory.GetDirectoriesRecursively("aunt/uncle");
-                Assert.That(result, Has.Length.EqualTo(1));
-                Assert.That(result, Has.Member(targetDirectory));
-            }
+            var result = currentDirectory.GetDirectoriesRecursively("aunt/uncle");
+            Assert.That(result, Has.Length.EqualTo(1));
+            Assert.That(result, Has.Member(targetDirectory));
         }
 
         [Test]
         public void GetDirectoriesRecursively_HandlesFailedSearch()
         {
-            using (ShimsContext.Create())
+            var currentDirectory = new ShimDirectoryInfo
             {
-                var currentDirectory = new ShimDirectoryInfo
-                {
-                    GetDirectoriesString = s => new DirectoryInfo[0]
-                }.Instance;
+                GetDirectoriesString = s => new DirectoryInfo[0]
+            }.Instance;
 
-                var result = currentDirectory.GetDirectoriesRecursively("sibling");
-                Assert.That(result, Has.Length.EqualTo(0));
-            }
+            var result = currentDirectory.GetDirectoriesRecursively("sibling");
+            Assert.That(result, Has.Length.EqualTo(0));
         }
     }
 }
