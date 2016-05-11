@@ -15,6 +15,7 @@ namespace FilesystemSearchExtensions
             var matchingSubDirectories = currentDirectory.GetDirectories(searchPattern);
 
             if (matchingSubDirectories.Length > 0) return matchingSubDirectories;
+            if (currentDirectory.Parent == null) return new DirectoryInfo[0];
 
             return GetDirectoriesRecursively(currentDirectory.Parent, searchPattern);
         }
