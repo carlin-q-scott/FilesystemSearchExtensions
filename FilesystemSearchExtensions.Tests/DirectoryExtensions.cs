@@ -26,21 +26,21 @@ namespace FilesystemSearchExtensions.Tests
         }
 
         [Test]
-        public void GetDirectoriesRecursively_FindCurrentDirectorySibling()
+        public void GetDirectoriesRecursively_FindCurrentDirectoryChild()
         {
-            var targetDirectory = new ShimDirectoryInfo { NameGet = () => "sibling" }.Instance;
+            var targetDirectory = new ShimDirectoryInfo { NameGet = () => "child" }.Instance;
             var currentDirectory = new ShimDirectoryInfo
             {
                 GetDirectoriesString = s => new[] { targetDirectory }
             }.Instance;
 
-            var result = currentDirectory.GetDirectoriesRecursively("sibling");
+            var result = currentDirectory.GetDirectoriesRecursively("child");
             Assert.That(result, Has.Length.EqualTo(1));
             Assert.That(result, Has.Member(targetDirectory));
         }
 
         [Test]
-        public void GetDirectoriesRecursively_FindParentSibling()
+        public void GetDirectoriesRecursively_FindCurrentDirectorySibling()
         {
             var targetDirectory = new ShimDirectoryInfo {NameGet = () => "sibling"}.Instance;
             var currentDirectory = new ShimDirectoryInfo
@@ -48,11 +48,11 @@ namespace FilesystemSearchExtensions.Tests
                 GetDirectoriesString = s => new DirectoryInfo[0],
                 ParentGet = () => new ShimDirectoryInfo
                 {
-                    GetDirectoriesString = s => new[] { targetDirectory },
+                    GetDirectoriesString = s => new[] { targetDirectory }
                 }.Instance
             }.Instance;
 
-            var result = currentDirectory.GetDirectoriesRecursively("aunt/uncle");
+            var result = currentDirectory.GetDirectoriesRecursively("sibling");
             Assert.That(result, Has.Length.EqualTo(1));
             Assert.That(result, Has.Member(targetDirectory));
         }
@@ -66,6 +66,50 @@ namespace FilesystemSearchExtensions.Tests
             }.Instance;
 
             var result = currentDirectory.GetDirectoriesRecursively("sibling");
+            Assert.That(result, Has.Length.EqualTo(0));
+        }
+
+        [Test]
+        public void GetFilesRecursively_FindCurrentFileSibling()
+        {
+            var targetFile = new ShimFileInfo { NameGet = () => "sibling" }.Instance;
+            var currentDirectory = new ShimDirectoryInfo
+            {
+                GetFilesString = s => new[] { targetFile }
+            }.Instance;
+
+            var result = currentDirectory.GetFilesRecursively("sibling");
+            Assert.That(result, Has.Length.EqualTo(1));
+            Assert.That(result, Has.Member(targetFile));
+        }
+
+        [Test]
+        public void GetFilesRecursively_FindParentSibling()
+        {
+            var targetFile = new ShimFileInfo { NameGet = () => "aunt/uncle" }.Instance;
+            var currentDirectory = new ShimDirectoryInfo
+            {
+                GetFilesString = s => new FileInfo[0],
+                ParentGet = () => new ShimDirectoryInfo
+                {
+                    GetFilesString = s => new[] { targetFile }
+                }.Instance
+            }.Instance;
+
+            var result = currentDirectory.GetFilesRecursively("aunt/uncle");
+            Assert.That(result, Has.Length.EqualTo(1));
+            Assert.That(result, Has.Member(targetFile));
+        }
+
+        [Test]
+        public void GetFilesRecursively_HandlesFailedSearch()
+        {
+            var currentDirectory = new ShimDirectoryInfo
+            {
+                GetFilesString = s => new FileInfo[0]
+            }.Instance;
+
+            var result = currentDirectory.GetFilesRecursively("sibling");
             Assert.That(result, Has.Length.EqualTo(0));
         }
     }
