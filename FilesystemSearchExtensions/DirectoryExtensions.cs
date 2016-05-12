@@ -6,10 +6,10 @@ namespace FilesystemSearchExtensions
     public static class DirectoryExtensions
     {
         /// <summary>
-        /// Finds the path to a related directory, which is a directory that is a child, sibling of the current directory or its parent/grandparent/etc.
+        /// Finds the path to matching related directories, which are directories that are children, siblings of the current directory or its parent/grandparent/etc. The search stops as soon as any matches are found.
         /// </summary>
         /// <param name="searchPattern"></param>
-        /// <returns></returns>
+        /// <returns>array of matching directories</returns>
         public static DirectoryInfo[] GetDirectoriesRecursively(this DirectoryInfo currentDirectory, string searchPattern)
         {
             var matchingSubDirectories = currentDirectory.GetDirectories(searchPattern);
@@ -21,10 +21,10 @@ namespace FilesystemSearchExtensions
         }
 
         /// <summary>
-        /// Finds the path to a related directory, which is a directory that is a child, sibling of the current directory or its parent/grandparent/etc.
+        /// Finds the path to matching related directories, which are directories that are children, siblings of the current directory or its parent/grandparent/etc. The search stops as soon as any matches are found.
         /// </summary>
         /// <param name="searchPattern"></param>
-        /// <returns></returns>
+        /// <returns>array of matching directory paths</returns>
         public static string[] GetDirectoriesRecursively(string searchPattern)
         {
             var currentDirectory = new DirectoryInfo(Directory.GetCurrentDirectory());
@@ -33,10 +33,20 @@ namespace FilesystemSearchExtensions
         }
 
         /// <summary>
-        /// Finds the path to a related file, which is a file that is in the current directory or in a parent/grandparent/etc directory.
+        /// Finds the path to matching related directories, which are directories that are children, siblings of the current directory or its parent/grandparent/etc. The search stops as soon as any matches are found.
         /// </summary>
         /// <param name="searchPattern"></param>
-        /// <returns></returns>
+        /// <returns>matching directory path or null if one wasn't found</returns>
+        public static string GetDirectoryRecursively(string searchPattern)
+        {
+            return GetDirectoriesRecursively(searchPattern).SingleOrDefault();
+        }
+
+        /// <summary>
+        /// Finds matching related files, which are files that are in the current directory or in a parent/grandparent/etc directory. The search stops as soon as any matches are found.
+        /// </summary>
+        /// <param name="searchPattern"></param>
+        /// <returns>array of matching files</returns>
         public static FileInfo[] GetFilesRecursively(this DirectoryInfo currentDirectory, string searchPattern)
         {
             var matchingFiles = currentDirectory.GetFiles(searchPattern);
@@ -48,15 +58,25 @@ namespace FilesystemSearchExtensions
         }
 
         /// <summary>
-        /// Finds the path to a related file, which is a file that is in the current directory or in a parent/grandparent/etc directory.
+        /// Finds filepaths to matching related files, which is a file that is in the current directory or in a parent/grandparent/etc directory. The search stops as soon as any matches are found.
         /// </summary>
         /// <param name="searchPattern"></param>
-        /// <returns></returns>
+        /// <returns>array of matching file paths</returns>
         public static string[] GetFilesRecursively(string searchPattern)
         {
             var currentDirectory = new DirectoryInfo(Directory.GetCurrentDirectory());
 
             return GetFilesRecursively(currentDirectory, searchPattern).Select(di => di.FullName).ToArray();
+        }
+
+        /// <summary>
+        /// Finds the filepath to a matching related file, which is a file that is in the current directory or in a parent/grandparent/etc directory. The search stops as soon as any matches are found.
+        /// </summary>
+        /// <param name="searchPattern"></param>
+        /// <returns>matching file path or null if one wasn't found</returns>
+        public static string GetFileRecursively(string searchPattern)
+        {
+            return GetFilesRecursively(searchPattern).SingleOrDefault();
         }
     }
 }
